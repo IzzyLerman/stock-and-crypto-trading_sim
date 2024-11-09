@@ -10,14 +10,15 @@ import setup
 import purchase
 import portfolio
 
-n= 10
+n= 100
 userinfo = "userinfo.txt"
 #curr_user = curr_user.User("izzy",10000)
 sg.theme('Dark Green 4')
 # All the stuff inside your window.
+purchase_page = purchase.Purchase()
 coins, coin_name_list, curr_user = setup.Setup.setup(n)
 
-purchase_layout = purchase.Purchase.setup_layout(coins, curr_user, n)
+purchase_layout = purchase_page.setup_layout(coins, curr_user,3)
 # Create the Window
 portfolio_layout = portfolio.Portfolio.setup_layout(curr_user)
 
@@ -27,9 +28,11 @@ layout = [[sg.Column(portfolio_layout, element_justification="center",visible=Tr
 window = sg.Window('Window Title', layout)
 
 
+
 curr_screen = "purchase"
 coin_is_selected = False
 mode = "Buy"
+
 
 
 # Event Loop to process "events" and get the "values" of the inputs
@@ -40,7 +43,6 @@ while True:
         print(e)
     
     event, values = window.read()
-
     if event == sg.WIN_CLOSED or event == 'Cancel': # if curr_user closes window or clicks cancel
             break   
     if event == '-GOTOPURCHASE-':
@@ -55,9 +57,11 @@ while True:
         if values['-SETBANKROLL-'] == '':
             sg.popup("Error: choose a value for your bankroll!", title = "Error")
         else:
-            curr_user.bankroll = float(values['-SETBANKROLL-'])
-            curr_user.starting_bankroll = float(values['-SETBANKROLL-'])
-            portfolio.Portfolio.update_layout(curr_user,window,event,values)
+            result = sg.popup(f"You are about to set your bankroll to ${values['-SETBANKROLL-']} - Are you sure?",custom_text=("I'm sure","Nevermind"))
+            if result == "I'm sure":
+                curr_user.bankroll = float(values['-SETBANKROLL-'])
+                curr_user.starting_bankroll = float(values['-SETBANKROLL-'])
+                portfolio.Portfolio.update_layout(curr_user,window,event,values)
     for i in range(n):
         if event == f'-BUYCOIN{i}-':
             selected = coins[i]
@@ -103,6 +107,9 @@ while True:
                 selected_owned = selected_usercoin.quantity if selected_usercoin is not None else 0
                 window['-SELECTEDQUANTITYOWNED-'].update(f"You own: {selected_owned:.5f} {selected.symbol} (${selected_owned*selected.price:.2f})",visible=True)
                 window['-USERBANKROLL-'].update(f"Your Bankroll :${curr_user.bankroll}")
+                sg.popup(f"Successfully {'bought' if mode == 'Buy' else 'sold'} {quantity} of {selected.name}!")
+    if event == '-SHOWMORECOINS-':
+        purchase_page.add_coins_to_purchase(curr_user, window, coins, 3)
     
 
     

@@ -21,7 +21,7 @@ class Setup:
         }
         headers = {
         'Accepts': 'application/json',
-        'X-CMC_PRO_API_KEY': '',
+        'X-CMC_PRO_API_KEY': 'a979658d-dbb0-4fed-82ed-177c6365457f',
         }
 
         with open('userinfo.txt') as f:
