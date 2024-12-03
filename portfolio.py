@@ -16,19 +16,17 @@ class Portfolio:
         coin_display += ([[sg.Frame('',[[sg.Text("Once you buy a coin, it will appear here.")]],visible=len(curr_user.portfolio) == 0,k='-COINBOXTOOLTIP-')]])
         for i in range(len(curr_user.portfolio)):
             coin_display += coin_info_layouts[i]
-        coin_display += [[sg.Button("Buy/Sell Crypto",k='-GOTOPURCHASE-')]]
-        welcome_panel = [[sg.Frame('',[[sg.Text("Welcome to CryptoGenius!")],
-                    [sg.Text("Test out your trading skills against real-time data!")],
-                    [sg.Text("Make some trades, then come back tomorrow to see how you would have done in the real market!")],
-                    [sg.Text("Trading only takes a couple clicks!")]])],[sg.HorizontalSeparator()]]
+        coin_display += [[sg.Button("Buy/Sell Crypto",k='-GOTOPURCHASE1-')]]
         portfolio_info = [
                            [sg.Text(f"Your portfolio value: ${curr_user.portfolio_value():,.2f}",k='-PORTFOLIOVALUE-')],
                            [sg.Text(f"Net Change: ${curr_user.net_diff():.2f} ({curr_user.net_diff_percent():.5f}%)",k='-PORTFOLIONETCHANGE-'),sg.VPush()],
                            [sg.Text("Edit your bankroll: ")],
                            [sg.InputText(k='-SETBANKROLL-')],
                            [sg.Button("Edit my Bankroll",k='-EDITBANKROLL-')]]
+        
 
-        layout_l = welcome_panel + portfolio_info
+
+        layout_l = [[sg.Button("Main Menu",k='-GOTOMAINMENU1-')]]+portfolio_info
         
         layout = [[sg.Column(layout_l, element_justification = "center"),sg.Column(coin_display,element_justification = "center",scrollable=False)]]
         return layout

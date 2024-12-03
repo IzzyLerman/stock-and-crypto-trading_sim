@@ -6,53 +6,59 @@ from decimal import Decimal
 
 
 import user
-import setup
-import purchase
-import portfolio
+from setup import Setup
+from purchase import Purchase
+from portfolio import Portfolio
+from mainMenu import MainMenu 
 
 n= 100
-userinfo = "userinfo.txt"
-#curr_user = curr_user.User("izzy",10000)
+userinfo = "./cryptogenius-core/userinfo.txt"
 sg.theme('Dark Green 4')
-# All the stuff inside your window.
-purchase_page = purchase.Purchase()
-coins, coin_name_list, curr_user = setup.Setup.setup(n)
+purchase_page = Purchase()
+coins, coin_name_list, curr_user = Setup.setup(n)
 
 purchase_layout = purchase_page.setup_layout(coins, curr_user,3)
-# Create the Window
-portfolio_layout = portfolio.Portfolio.setup_layout(curr_user)
+portfolio_layout = Portfolio.setup_layout(curr_user)
+main_menu_layout = MainMenu.setup_layout()
 
+PAGE_KEYS = ["-PORTFOLIOPAGE-",'-PURCHASEPAGE-','-MAINMENUPAGE-']
 
-layout = [[sg.Column(portfolio_layout, element_justification="center",visible=True,k="-PORTFOLIOPAGE-"),sg.Column(purchase_layout,element_justification="center",visible=False,k='-PURCHASEPAGE-')]]
+layout = [[sg.Column(portfolio_layout, element_justification="center",visible=False,k="-PORTFOLIOPAGE-"),
+           sg.Column(purchase_layout,element_justification="center",visible=False,k='-PURCHASEPAGE-'),
+           sg.Column(main_menu_layout,element_justification="center",visible=True,k='-MAINMENUPAGE-')]]
 
 window = sg.Window('Window Title', layout)
-
-
 
 curr_screen = "purchase"
 coin_is_selected = False
 mode = "Buy"
 
+def switch_to_page(key, window):
+    for k in PAGE_KEYS:
+        if k != key:
+            window[k].update(visible=False)
+        else:
+            window[k].update(visible=True)
 
 
-# Event Loop to process "events" and get the "values" of the inputs
 while True:
     try:
         pass
     except (ConnectionError, Timeout, TooManyRedirects) as e:
         print(e)
-    
     event, values = window.read()
+
     if event == sg.WIN_CLOSED or event == 'Cancel': # if curr_user closes window or clicks cancel
             break   
-    if event == '-GOTOPURCHASE-':
-        window['-PORTFOLIOPAGE-'].update(visible = False)
-        window['-PURCHASEPAGE-'].update(visible=True)
+    if event in [f'-GOTOPURCHASE{i}-' for i in range(5)]:
+        switch_to_page('-PURCHASEPAGE-', window)
         window['-USERBANKROLL-'].update(f"Your Bankroll :${curr_user.bankroll}")
-    if event == '-GOTOPORTFOLIO-':
-        window['-PORTFOLIOPAGE-'].update(visible = True)
-        window['-PURCHASEPAGE-'].update(visible=False)
-        portfolio.Portfolio.update_layout(curr_user,window,event,values)
+    if event in [f'-GOTOPORTFOLIO{i}-' for i in range(5)]:
+        switch_to_page('-PORTFOLIOPAGE-', window)
+        Portfolio.update_layout(curr_user,window,event,values)
+
+    if event in [f'-GOTOMAINMENU{i}-' for i in range(5)]:
+        switch_to_page('-MAINMENUPAGE-',window)
     if event == '-EDITBANKROLL-':
         if values['-SETBANKROLL-'] == '':
             sg.popup("Error: choose a value for your bankroll!", title = "Error")
@@ -61,7 +67,7 @@ while True:
             if result == "I'm sure":
                 curr_user.bankroll = float(values['-SETBANKROLL-'])
                 curr_user.starting_bankroll = float(values['-SETBANKROLL-'])
-                portfolio.Portfolio.update_layout(curr_user,window,event,values)
+                Portfolio.update_layout(curr_user,window,event,values)
     for i in range(n):
         if event == f'-BUYCOIN{i}-':
             selected = coins[i]
