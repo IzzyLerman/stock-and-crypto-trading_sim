@@ -1,3 +1,3 @@
-# stock-and-crypto-trading_sim
+# Cryptogenius-trading-simulator
 
-I will try to create a program where a user starts with a bankroll, and can trade stocks or crypto with real-time data, in order to attempt to make a profit.
+A Desktop cryptocurrency trading simulator. This program uses microservice architecture; only the core service for Cryptogenius is included in this directory. To launch it, run `python main.py` in the root directory. 
