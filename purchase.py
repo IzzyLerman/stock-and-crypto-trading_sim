@@ -35,7 +35,7 @@ class Purchase:
 
         layout_r = [[sg.Column(coins_to_purchase,k='-COINSTOPURCHASE-',scrollable=True)], [sg.Column(show_more)]]
 
-        layout_l = [[sg.Frame('Purchase',purchase_box)],[sg.Button("View my Portfolio in Detail",k='-GOTOPORTFOLIO1-')]]
+        layout_l = [[sg.Frame('Purchase',purchase_box)],[sg.Button("View my Portfolio in Detail",k='-GOTOPORTFOLIO1-'), sg.Button("Main Menu",k='-GOTOMAINMENU2-')]]
 
         layout = [[sg.Column(layout_l, element_justification="center"),sg.Column(layout_r, element_justification='right')]]
 

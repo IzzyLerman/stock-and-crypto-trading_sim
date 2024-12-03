@@ -1,8 +1,10 @@
 import PySimpleGUI as sg
-from requests import Request, Session
+import requests
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import json
 from decimal import Decimal
+from dotenv import load_dotenv
+import os
 
 
 import user
@@ -11,8 +13,11 @@ from purchase import Purchase
 from portfolio import Portfolio
 from mainMenu import MainMenu 
 
+
+load_dotenv()
+notif_port = os.getenv('NOTIF_PORT')
 n= 100
-userinfo = "./cryptogenius-core/userinfo.txt"
+userinfo = "./userinfo.txt"
 sg.theme('Dark Green 4')
 purchase_page = Purchase()
 coins, coin_name_list, curr_user = Setup.setup(n)
@@ -39,6 +44,26 @@ def switch_to_page(key, window):
             window[k].update(visible=False)
         else:
             window[k].update(visible=True)
+
+def send_coin_to_notif(coin):
+    notification_data = {
+        "asset_symbol": coin.symbol,
+        "alert_value": coin.price,  # Use a number here instead of a string
+        "notification_type": "Price Alert",
+        "user_email": curr_user.email  # Add user email to the request
+    }
+
+    # Send a POST request to the /notify endpoint
+    response = requests.post(f"http://localhost:{notif_port}/notify", json=notification_data)
+
+    # Check and print the response
+    if response.status_code == 200:
+        print("Notification registered successfully.")
+        print("Response:", response.json())
+    else:
+        print("Failed to register notification.")
+        print("Status Code:", response.status_code)
+        print("Response:", response.text)
 
 
 while True:
@@ -116,6 +141,9 @@ while True:
                 sg.popup(f"Successfully {'bought' if mode == 'Buy' else 'sold'} {quantity} of {selected.name}!")
     if event == '-SHOWMORECOINS-':
         purchase_page.add_coins_to_purchase(curr_user, window, coins, 3)
+    if event == '-NOTIFY-':
+        send_coin_to_notif(curr_user.portfolio[0])
+    
     
 
     

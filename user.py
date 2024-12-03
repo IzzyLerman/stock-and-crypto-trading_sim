@@ -1,7 +1,4 @@
 class MarketCoin:
-    def __init__(self) -> None:
-        pass
-    
     def __init__(self, name, price, market_cap,symbol ,percent_change_24h, percent_change_7d):
         self.name = name
         self.price = price
@@ -12,8 +9,28 @@ class MarketCoin:
 class UserCoin:
     def __init__(self) -> None:
         self.quantity = 0
-    
-    def __init__(self, coin, quantity):
+        self.name = "NoneCoin"
+        self.price = 0
+        self.market_cap = 0
+        self.symbol = "N/A"
+        self.percent_change_24h = 0
+        self.percent_change_7d = 0
+        
+
+
+    def __init__(self, quantity, name, price, market_cap,symbol ,percent_change_24h, percent_change_7d):
+        self.quantity = quantity
+        self.name = name
+        self.price = price
+        self.market_cap = market_cap
+        self.symbol = symbol
+        self.percent_change_24h = percent_change_24h
+        self.percent_change_7d = percent_change_7d
+    def update_quantity(self, diff):
+        self.quantity += diff
+
+    #copy from existing marketcoin
+    def copy_from_existing(self, coin, quantity):
         self.quantity = quantity
         self.name = coin.name
         self.price = coin.price
@@ -21,20 +38,20 @@ class UserCoin:
         self.symbol = coin.symbol
         self.percent_change_24h = coin.percent_change_24h
         self.percent_change_7d = coin.percent_change_7d
-    def update_quantity(self, diff):
-        self.quantity += diff
 
 class User:
     def __init__(self) -> None:
         self.bankroll = 0
+        self.email = "none@never.ever"
 
     def __init__(self, name, bankroll):
         self.name = name
         self.bankroll = bankroll
         self.starting_bankroll = bankroll
         self.portfolio = []
+        self.email = "none@never.ever"
 
-    #Purchase a market coin;-4 if selling last of coins, return -3 if not enough to sell, -2 if not enough money, -1 if existing coin, index of coin if its a new coin, along with second value which
+    #Purchase a market coin; return -3 if not enough to sell, -2 if not enough money, -1 if existing coin, index of coin if its a new coin, along with second value which
     # is true if we are selling the last of a user's stock
     def purchase(self,coin,quantity,mode)->int:
         cost = coin.price * quantity
@@ -46,7 +63,9 @@ class User:
                     c.quantity += quantity
                     self.bankroll -= cost
                     return -1, False
-            self.portfolio.append(UserCoin(coin, quantity))
+            new_coin = UserCoin
+            new_coin.copy_from_existing(new_coin,coin,quantity)
+            self.portfolio.append(new_coin)
             self.bankroll -= cost
             return len(self.portfolio)-1, False
         else:
@@ -55,8 +74,7 @@ class User:
                     if c.quantity < quantity:
                         return -3, False
                     else:
-                        quantity *= -1
-                        c.quantity += quantity
+                        c.quantity -= quantity
                         if c.quantity == 0:
                             self.portfolio.pop(idx)
                         self.bankroll += cost
