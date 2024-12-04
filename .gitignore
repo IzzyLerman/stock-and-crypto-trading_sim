@@ -1,3 +1,5 @@
 .env
 __pycache__/
 userinfo.txt
+log.txt
+notif-log.txt

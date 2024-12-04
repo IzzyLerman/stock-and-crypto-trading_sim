@@ -8,8 +8,7 @@ class MainMenu:
             [sg.Text("Trading only takes a couple clicks!")]])],[sg.HorizontalSeparator()]]
         
         layout_l = welcome_panel + [[sg.Button("My Portfolio",k='-GOTOPORTFOLIO2-'),sg.Button("Buy/Sell Crypto",k="-GOTOPURCHASE2-")]]
-        layout_r = [[sg.Button("Add a coin to the notification list",k="-NOTIFY-")]]
 
-        layout = [[sg.Column(layout_l, element_justification = "center"),sg.Column(layout_r,element_justification = "center",scrollable=False)]]
-        return layout
+        #layout = [[sg.Column(layout_l, element_justification = "center"),sg.Column(layout_r,element_justification = "center",scrollable=False)]]
+        return layout_l
     

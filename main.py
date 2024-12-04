@@ -39,11 +39,17 @@ coin_is_selected = False
 mode = "Buy"
 
 def switch_to_page(key, window):
+    screen_width, screen_height = window.get_screen_dimensions()
+    win_width,win_height = window.size
+    x, y = (screen_width - win_width) // 2, win_height//10
+    window.move(x,y)
     for k in PAGE_KEYS:
         if k != key:
             window[k].update(visible=False)
         else:
             window[k].update(visible=True)
+
+## Returns a tuple with the JSON response and a flag indicating success or not
 
 def send_coin_to_notif(coin):
     notification_data = {
@@ -53,18 +59,25 @@ def send_coin_to_notif(coin):
         "user_email": curr_user.email  # Add user email to the request
     }
 
-    # Send a POST request to the /notify endpoint
-    response = requests.post(f"http://localhost:{notif_port}/notify", json=notification_data)
+    try:
+        response = requests.post(f"http://localhost:{notif_port}/notify", json=notification_data)
+        if response.status_code == 200:
+            return response.json(), True
+        else:
+            return response.json(), False
+    except ConnectionError as e:
+        return {}, False
+    except Exception as e:
+        print(getattr(e, 'message', repr(e)))
+        return {}, False
 
-    # Check and print the response
-    if response.status_code == 200:
-        print("Notification registered successfully.")
-        print("Response:", response.json())
-    else:
-        print("Failed to register notification.")
-        print("Status Code:", response.status_code)
-        print("Response:", response.text)
-
+def generate_notif(res, window):
+    price = res['alert']['alert_value']
+    window['-NOTIFRESPONSE-'].update(visible=True)
+    window['-NOTIFYSYMBOL-'].update(res['alert']["asset_symbol"]+'\t$'+f'{price:,.2f}')
+    window['-NOTIFTYPE-'].update('Notification Type: '+res['alert']["notification_type"])
+    window['-NOTIFMSG-'].update(res["message"])
+    pass
 
 while True:
     try:
@@ -75,15 +88,20 @@ while True:
 
     if event == sg.WIN_CLOSED or event == 'Cancel': # if curr_user closes window or clicks cancel
             break   
+    
+    ## Page switches
+
     if event in [f'-GOTOPURCHASE{i}-' for i in range(5)]:
         switch_to_page('-PURCHASEPAGE-', window)
         window['-USERBANKROLL-'].update(f"Your Bankroll :${curr_user.bankroll}")
     if event in [f'-GOTOPORTFOLIO{i}-' for i in range(5)]:
         switch_to_page('-PORTFOLIOPAGE-', window)
         Portfolio.update_layout(curr_user,window,event,values)
-
     if event in [f'-GOTOMAINMENU{i}-' for i in range(5)]:
         switch_to_page('-MAINMENUPAGE-',window)
+
+    ## Portfolio Page
+
     if event == '-EDITBANKROLL-':
         if values['-SETBANKROLL-'] == '':
             sg.popup("Error: choose a value for your bankroll!", title = "Error")
@@ -93,6 +111,21 @@ while True:
                 curr_user.bankroll = float(values['-SETBANKROLL-'])
                 curr_user.starting_bankroll = float(values['-SETBANKROLL-'])
                 Portfolio.update_layout(curr_user,window,event,values)
+    if event == '-NOTIFY-':
+        symb = values['-NOTIFYLIST-']
+        if symb == 'Select a coin':
+            sg.popup("You must select a coin first!",title = "Error")
+        else:
+            for c in curr_user.portfolio:
+                if c.symbol == symb:
+                    notif_response, status = send_coin_to_notif(c)
+            if status:
+                generate_notif(notif_response, window)
+            else:
+                sg.Popup("Failed to connect to the notification service. Is it running?", title="Couldn't connect")
+
+    ## Purchase Page
+
     for i in range(n):
         if event == f'-BUYCOIN{i}-':
             selected = coins[i]
@@ -141,8 +174,6 @@ while True:
                 sg.popup(f"Successfully {'bought' if mode == 'Buy' else 'sold'} {quantity} of {selected.name}!")
     if event == '-SHOWMORECOINS-':
         purchase_page.add_coins_to_purchase(curr_user, window, coins, 3)
-    if event == '-NOTIFY-':
-        send_coin_to_notif(curr_user.portfolio[0])
     
     
 
