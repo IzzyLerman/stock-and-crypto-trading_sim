@@ -15,7 +15,7 @@ class Setup:
         pass
     def setup(n):
         load_dotenv()
-        API_KEY = os.getenv('API_KEY')
+        api_key = os.getenv('CMC_API_KEY')
         url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
         parameters = {
         'start':'1',
@@ -25,7 +25,7 @@ class Setup:
         }
         headers = {
         'Accepts': 'application/json',
-        'X-CMC_PRO_API_KEY': API_KEY,
+        'X-CMC_PRO_API_KEY': api_key,
         }
 
         with open(userinfofilename) as f:
