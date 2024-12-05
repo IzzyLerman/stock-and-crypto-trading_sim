@@ -25,8 +25,14 @@ class Portfolio:
                            [sg.Button("Edit my Bankroll",k='-EDITBANKROLL-')]]
         
 
+        notif_prompt = [[sg.Frame('',[[
+                            sg.Combo(['Select a coin']+[c.symbol for c in curr_user.portfolio],default_value='Select a coin',k='-NOTIFYLIST-',readonly=True)]]
+                            +[[sg.Button("Set notifications for this coin",k='-NOTIFY-')]])]]
+        notif_msg = [[sg.Frame('Notification Response',
+                        [[sg.Text('',k='-NOTIFYSYMBOL-')]]+[[sg.Text('',k='-NOTIFTYPE-')]]+[[sg.Text('',k='-NOTIFMSG-')]],
+                    k='-NOTIFRESPONSE-',visible=False)]]
 
-        layout_l = [[sg.Button("Main Menu",k='-GOTOMAINMENU1-')]]+portfolio_info
+        layout_l = [[sg.Button("Main Menu",k='-GOTOMAINMENU1-')]]+portfolio_info+notif_prompt+notif_msg
         
         layout = [[sg.Column(layout_l, element_justification = "center"),sg.Column(coin_display,element_justification = "center",scrollable=False)]]
         return layout
@@ -39,4 +45,4 @@ class Portfolio:
         window['-PORTFOLIOVALUE-'].update(f"Your portfolio value: ${curr_user.portfolio_value():,.2f}")
         window['-PORTFOLIONETCHANGE-'].update(f"Net Change: ${curr_user.net_diff():,.2f} ({curr_user.net_diff_percent():.5f}%)")
         window['-USERBANKROLLPORTFOLIO-'].update(f"USD Balance: ${curr_user.bankroll:,.2f}")
-
+        window['-NOTIFYLIST-'].update(value = 'Select a coin', values = ['Select a coin']+[c.symbol for c in curr_user.portfolio])

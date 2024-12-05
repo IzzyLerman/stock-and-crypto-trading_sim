@@ -3,10 +3,13 @@ import PySimpleGUI as sg
 class Purchase:
     def __init__(self):
         self.num_coins_displayed = 0
+        self.coin_boxes = []
+        self.market_size = 0
     def setup_layout(self, coins, user,n):
         self.num_coins_displayed = n
         coin_info_layouts = []
         coin_box_layouts = []
+        self.market_size = n
         for i in range(n):
             coin_info_layouts.append([[sg.Text(f'Coin name: {coins[i].name} ({coins[i].symbol})',k=f'-COINNAME{i}-')],
                             [sg.Text('Price: ${0:.2f}'.format(coins[i].price),k=f'-COINPRICE{i}-')],
@@ -30,16 +33,25 @@ class Purchase:
         coins_to_purchase = []
         for i in range(n):
             coins_to_purchase += [coin_box_layouts[i]]
+        self.coin_boxes = coins
 
         show_more = [[sg.Button(f'Show More Coins',k='-SHOWMORECOINS-')]]
 
-        layout_r = [[sg.Column(coins_to_purchase,k='-COINSTOPURCHASE-',scrollable=True)], [sg.Column(show_more)]]
+        lookup_input = [[sg.Input(k='-LOOKUPINPUT-',size=(30,5)),sg.Button('Look up coin',k='-LOOKUP-')]]
+        lookup = [[sg.Frame('Look up a coin by name', lookup_input)]]
 
-        layout_l = [[sg.Frame('Purchase',purchase_box)],[sg.Button("View my Portfolio in Detail",k='-GOTOPORTFOLIO1-')]]
+        layout_r = lookup + [[sg.Column(coins_to_purchase,k='-COINSTOPURCHASE-',scrollable=True)]] + show_more
+
+        layout_l = [[sg.Frame('Purchase',purchase_box)],[sg.Button("View my Portfolio in Detail",k='-GOTOPORTFOLIO1-'), sg.Button("Main Menu",k='-GOTOMAINMENU2-')]]
 
         layout = [[sg.Column(layout_l, element_justification="center"),sg.Column(layout_r, element_justification='right')]]
 
         return layout
+    
+    def add_coin_to_market(self, curr_user, window, coins, new_coin):
+        coins.insert(self.num_coins_displayed,new_coin)
+        self.market_size += 1
+        self.add_coins_to_purchase(curr_user,window,coins,1)
     
     def add_coins_to_purchase(self, user, window, coins, n):
         for j in range(n):
@@ -51,6 +63,7 @@ class Purchase:
             coin_box = [[sg.Frame('',[[sg.Button(f'Select',k = f'-BUYCOIN{i}-'),sg.Frame('',coin_info,element_justification='center')]])]]
             window.extend_layout(window['-COINSTOPURCHASE-'],coin_box)
         self.num_coins_displayed += n
+        window.refresh()
         window['-COINSTOPURCHASE-'].contents_changed()
             
 
