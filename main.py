@@ -16,6 +16,7 @@ from mainMenu import MainMenu
 
 load_dotenv()
 notif_port = os.getenv('NOTIF_PORT')
+lookup_port = os.getenv('LOOKUP_PORT')
 n= 100
 userinfo = "./userinfo.txt"
 sg.theme('Dark Green 4')
@@ -174,6 +175,33 @@ while True:
                 sg.popup(f"Successfully {'bought' if mode == 'Buy' else 'sold'} {quantity} of {selected.name}!")
     if event == '-SHOWMORECOINS-':
         purchase_page.add_coins_to_purchase(curr_user, window, coins, 3)
+        window['-COINSTOPURCHASE-'].contents_changed()
+    if event == '-LOOKUP-':
+        query = values['-LOOKUPINPUT-']
+        if query == '':
+            sg.Popup('You must provide a coin name to search for!',title='Error')
+        else:
+            try:
+                response = requests.get(f'http://localhost:{lookup_port}/search/{query}')
+                data = response.json()
+                if(data['status'] == 'OK'):
+                    new_coin = user.MarketCoin(
+                        data['query']['name'],
+                        data['query']['price'],
+                        data['query']['market_cap'],
+                        data['query']['symbol'],
+                        data['query']['percent_change_24h'],
+                        data['query']['percent_change_7d']
+                    )
+                    purchase_page.add_coin_to_market(curr_user, window, coins, new_coin )
+                    window['-COINSTOPURCHASE-'].contents_changed()
+                else:
+                    sg.Popup('Error: Couldn\'t find that coin.',title='Coin not found')
+            except ConnectionError as e:
+                sg.Popup('Error: Failed to connect to the lookup service.',title='Couldn\'t connect')
+            except Exception as e:
+                print(getattr(e, 'message', repr(e)))
+                
     
     
 
