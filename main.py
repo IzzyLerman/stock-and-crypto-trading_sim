@@ -12,7 +12,7 @@ from setup import Setup
 from purchase import Purchase
 from portfolio import Portfolio
 from mainMenu import MainMenu 
-
+from info import Info
 
 load_dotenv()
 notif_port = os.getenv('NOTIF_PORT')
@@ -21,17 +21,21 @@ n= 100
 userinfo = "./userinfo.txt"
 sg.theme('Dark Green 4')
 purchase_page = Purchase()
+info_page = Info()
 coins, coin_name_list, curr_user = Setup.setup(n)
 
 purchase_layout = purchase_page.setup_layout(coins, curr_user,3)
 portfolio_layout = Portfolio.setup_layout(curr_user)
 main_menu_layout = MainMenu.setup_layout()
+info_layout = Info.setup_layout(curr_user)
 
-PAGE_KEYS = ["-PORTFOLIOPAGE-",'-PURCHASEPAGE-','-MAINMENUPAGE-']
+PAGE_KEYS = ["-PORTFOLIOPAGE-",'-PURCHASEPAGE-','-MAINMENUPAGE-','-INFOPAGE-']
 
 layout = [[sg.Column(portfolio_layout, element_justification="center",visible=False,k="-PORTFOLIOPAGE-"),
            sg.Column(purchase_layout,element_justification="center",visible=False,k='-PURCHASEPAGE-'),
-           sg.Column(main_menu_layout,element_justification="center",visible=True,k='-MAINMENUPAGE-')]]
+           sg.Column(main_menu_layout,element_justification="center",visible=True,k='-MAINMENUPAGE-'),
+           sg.Column(info_layout,element_justification="center",visible=False,k='-INFOPAGE-')
+           ]]
 
 window = sg.Window('Window Title', layout)
 
@@ -100,6 +104,8 @@ while True:
         Portfolio.update_layout(curr_user,window,event,values)
     if event in [f'-GOTOMAINMENU{i}-' for i in range(5)]:
         switch_to_page('-MAINMENUPAGE-',window)
+    if event in [f'-GOTOINFO{i}-' for i in range(5)]:
+        switch_to_page('-INFOPAGE-',window)
 
     ## Portfolio Page
 
@@ -201,7 +207,14 @@ while True:
                 sg.Popup('Error: Failed to connect to the lookup service.',title='Couldn\'t connect')
             except Exception as e:
                 print(getattr(e, 'message', repr(e)))
-                
+    # INFO PAGE
+    if event == '-VIEWINDEPTH-':
+        if values['-INFOCHOICE-'] == 'Select a coin':
+            sg.Popup('Error: must select a coin first!')
+        else:
+            success = Info.update_info_page(window,curr_user,values['-INFOCHOICE-'])
+            if (not success):
+                sg.Popup('Couldn\'t connect to the summary service.',title='Error')
     
     
 
